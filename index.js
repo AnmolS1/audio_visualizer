@@ -1,47 +1,39 @@
 var windowW = window.innerWidth, windowH = Math.max(600, window.innerHeight);
 var body = document.body;
 
-window.onload = function()
-{
+window.onload = function() {
 	var webgl = new Webgl();
 	var audio = new Audio(webgl);
 };
 
-class Audio
-{
-	constructor(_webgl)
-	{
+class Audio {
+	constructor(_webgl) {
 		this.webgl = _webgl;
 		this.source;
 		this.audioContext = (window.AudioContext) ? new AudioContext() : new webkitAudioContext();
-		this.fileReader  = new FileReader;
+		this.fileReader = new FileReader;
 		this.init();
 		this.isReady = false;
 		this.count = 0;
 		this.render();
 	}
 	
-	init()
-	{
+	init() {
 		this.analyser = this.audioContext.createAnalyser();
 		this.analyser.fftSize = 2048;
 		this.analyser.minDecibels = -70;
 		this.analyser.maxDecibels = 10;
 		this.analyser.smoothingTimeConstant = 0.75;
 		
-		document.getElementById('file').addEventListener('change', function(e)
-		{
+		document.getElementById('file').addEventListener('change', function(e) {
 			this.fileReader.readAsArrayBuffer(e.target.files[0]);
 		}.bind(this));
 		
 		var _this = this;
 		
-		this.fileReader.onload = function()
-		{
-			_this.audioContext.decodeAudioData(_this.fileReader.result, function(buffer)
-			{
-				if(_this.source)
-				{
+		this.fileReader.onload = function() {
+			_this.audioContext.decodeAudioData(_this.fileReader.result, function(buffer) {
+				if (_this.source) {
 					_this.source.stop();
 				}
 				_this.source = _this.audioContext.createBufferSource();
@@ -65,9 +57,8 @@ class Audio
 		};
 	}
 	
-	_render()
-	{
-		if(!this.isReady) return;
+	_render() {
+		if (!this.isReady) return;
 		this.count++;
 		
 		this.spectrums = new Uint8Array(this.analyser.frequencyBinCount);
@@ -75,16 +66,13 @@ class Audio
 		
 		var num, mult, frequency, maxNum = 255, frequencyAvg = 0;
 		
-		for(var i = 0; i < this.indexPosLength; i++)
-		{
+		for (var i = 0; i < this.indexPosLength; i++) {
 			mult = Math.floor(i / maxNum);
 			
-			if(mult % 2 === 0)
-			{
+			if (mult % 2 === 0) {
 				num = i - maxNum * mult;
 			}
-			else
-			{
+			else {
 				num = maxNum - (i - maxNum * mult);
 			}
 			
@@ -94,15 +82,14 @@ class Audio
 			var indexPos = this.indexPosArray[i];
 			spectrum = Math.max(0, spectrum - i/80);
 			
-			for(var j = 0, len = indexPos.length; j < len; j++)
-			{
+			for (var j = 0, len = indexPos.length; j < len; j++) {
 				var vectorNum = indexPos[j];
 				this.frequencyArray[vectorNum] = spectrum;
 			}
 		}
 		
 		frequencyAvg /= this.indexPosLength;
-		frequencyAvg*= 1.7;
+		frequencyAvg *= 1.7;
 		this.webgl.sphereM.uniforms["uScale"].value = this.webgl.sphereM_2.uniforms["uScale"].value = frequencyAvg * 1.7;
 		this.webgl.sphereM.uniforms["uTime"].value += 0.015;
 		
@@ -111,24 +98,20 @@ class Audio
 		this.webgl.mesh_2.scale.z = 1 + frequencyAvg / 290;
 	}
 	
-	render()
-	{
+	render() {
 		this._render();
 		this.webgl.render();
 		requestAnimationFrame(this.render.bind(this));
 	}
 }
 
-class Webgl
-{
-	constructor()
-	{
+class Webgl {
+	constructor() {
 		this.scene = new THREE.Scene();
 		this.camera = new THREE.PerspectiveCamera(45, windowW / windowH, 0.1, 10000);
 		this.camera.position.set(20, 200, -80);
 		this.camera.lookAt(this.scene.position);
-		this.renderer = new THREE.WebGLRenderer(
-		{
+		this.renderer = new THREE.WebGLRenderer({
 			antialias: true,
 			alpha: true
 		});
@@ -145,22 +128,18 @@ class Webgl
 		this.renderer.domElement.style.width = windowW + "px";
 		this.renderer.domElement.style.height = windowH + "px";
 		
-		
-		
 		var orbit = new THREE.OrbitControls(this.camera, this.renderer.domElement);
 		this.windowW = windowW;
 		this.windowH = window.innerHeight;
 		
-		this.mouse =
-		{
+		this.mouse = {
 			x: 0,
 			y: 0,
 			old_x: 0,
 			old_y : 0
 		};
 		
-		window.onresize = function()
-		{
+		window.onresize = function() {
 			this.windowW = document.body.clientWidth;
 			this.windowH = window.innerHeight;
 			var _height = Math.max(600, this.windowH);
@@ -178,19 +157,14 @@ class Webgl
 		this.renderer.render(this.scene, this.camera);
 	}
 	
-	
-	
-	createSphere()
-	{
+	createSphere() {
 		this.createShader();
 		
 		this.sphereG = new THREE.IcosahedronBufferGeometry(40, 4);
-		this.sphereM = new THREE.ShaderMaterial(
-		{
+		this.sphereM = new THREE.ShaderMaterial( {
 			vertexShader: this.vertex,
 			fragmentShader: this.fragment,
-			uniforms:
-			{
+			uniforms: {
 				uTime: {type: "f", value: 0},
 				uScale: {type: "f", value: 0},
 				isBlack : {type: "i", value: 1}
@@ -198,7 +172,6 @@ class Webgl
 			wireframe: true,
 			transparent: true
 		});
-		
 		
 		this.detectIndex();
 		this.sphereG.addAttribute("aFrequency", new THREE.BufferAttribute(new Float32Array(this.indexArray.length), 1));
@@ -210,30 +183,24 @@ class Webgl
 		this.createSphere2();
 	}
 	
-	
-	createSphere2()
-	{
-	this.sphereG_2 = new THREE.IcosahedronBufferGeometry(39.5, 4);
-	this.sphereG_2.addAttribute("aFrequency", new THREE.BufferAttribute(new Float32Array(this.indexArray.length), 1));
-	this.sphereM_2 =  new THREE.ShaderMaterial(
-	{
-		vertexShader: this.vertex_2,
-		fragmentShader: this.fragment_2,
-		uniforms:
-		{
-			uScale: {type: "f", value: 0},
-			isBlack: {type: "i", value: 1}
-		},
-		shading: THREE.FlatShading
-	});
-	
-	this.mesh_2 = new THREE.Mesh(this.sphereG_2, this.sphereM_2);
-	this.scene.add(this.mesh_2);
+	createSphere2() {
+		this.sphereG_2 = new THREE.IcosahedronBufferGeometry(39.5, 4);
+		this.sphereG_2.addAttribute("aFrequency", new THREE.BufferAttribute(new Float32Array(this.indexArray.length), 1));
+		this.sphereM_2 =  new THREE.ShaderMaterial({
+			vertexShader: this.vertex_2,
+			fragmentShader: this.fragment_2,
+			uniforms: {
+				uScale: {type: "f", value: 0},
+				isBlack: {type: "i", value: 1}
+			},
+			shading: THREE.FlatShading
+		});
+		
+		this.mesh_2 = new THREE.Mesh(this.sphereG_2, this.sphereM_2);
+		this.scene.add(this.mesh_2);
 	}
 	
-	
-	detectIndex()
-	{
+	detectIndex() {
 		this.verticesArray = this.sphereG.attributes.position.array;
 		var arrayLength = this.verticesArray.length;
 		
@@ -245,8 +212,7 @@ class Webgl
 		this.indexPosArray = []; 
 		this.frequencyNumArray = [];
 		
-		for(var i = 0; i < arrayLength; i+= 3)
-		{
+		for (var i = 0; i < arrayLength; i += 3) {
 			var vec3 = {};
 			vec3.x = this.verticesArray[i];
 			vec3.y = this.verticesArray[i + 1];
@@ -254,13 +220,11 @@ class Webgl
 			var detect = this.detectVec(vec3);
 			this.allVec3Array.push(vec3);
 			
-			if(detect === 0 || detect > 0)
-			{
+			if (detect === 0 || detect > 0) {
 				this.indexArray[this.indexCount] = detect;
 				this.indexPosArray[detect].push(this.indexCount);
 			}
-			else
-			{
+			else {
 				this.vec3Array[this.vecCount] = vec3;
 				this.indexArray[this.indexCount] = this.vecCount;
 				
@@ -274,16 +238,12 @@ class Webgl
 		}
 	}
 	
-	
-	detectVec(vec3)
-	{
-		if(this.vecCount === 0) return false;
-		for(var i = 0, len = this.vec3Array.length; i < len; i++)
-		{
+	detectVec(vec3) {
+		if (this.vecCount === 0) return false;
+		for (var i = 0, len = this.vec3Array.length; i < len; i++) {
 			var _vec3 = this.vec3Array[i];
 			var isExisted = vec3.x === _vec3.x && vec3.y === _vec3.y && vec3.z === _vec3.z;
-			if(isExisted)
-			{
+			if (isExisted) {
 				return i;
 			}
 		}
@@ -291,8 +251,7 @@ class Webgl
 		return false;
 	}
 	
-	createShader()
-	{
+	createShader() {
 		this.vertex = [
 			"uniform float uTime;",
 			"uniform float uScale;",
@@ -418,8 +377,7 @@ class Webgl
 		].join("\n");
 	}
 	
-	render()
-	{
+	render() {
 		this.sphereG.attributes.aFrequency.needsUpdate = true;
 		this.renderer.render(this.scene, this.camera);
 	}
