@@ -29,7 +29,8 @@ app.get('/login', (req, res) => {
 	const scope = [
 		'user-read-private',
 		'user-read-email',
-		'user-top-read'
+		'user-top-read',
+		'user-read-playback-state'
 	].join(' ');
 	
 	res.redirect('https://accounts.spotify.com/authorize?' +

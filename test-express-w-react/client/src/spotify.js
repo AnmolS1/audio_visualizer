@@ -104,3 +104,6 @@ export const getPlaylistById = playlist_id => {
 export const getAudioFeaturesForTracks = ids => {
 	return axios.get(`/audio-features?ids=${ids}`);
 };
+export const getCurrentState = () => {
+	return axios.get(`/me/player`);
+};

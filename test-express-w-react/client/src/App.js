@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { access_token, logout } from './spotify';
-import { Login, Profile, TopArtists, TopTracks, Playlists, Playlist } from './pages';
+import {
+	Login,
+	Profile,
+	TopArtists,
+	TopTracks,
+	Playlists,
+	Playlist,
+	CurrentlyPlaying
+} from './pages';
 import { GlobalStyle } from './styles';
 import styled from 'styled-components/macro';
 
@@ -52,6 +60,8 @@ function App() {
 						<ScrollToTop />
 						
 						<Routes>
+							{/* testing currently playing page */}
+							<Route path="/currently-playing" element={<CurrentlyPlaying />} />
 							<Route path="/top-artists" element={<TopArtists />} />
 							<Route path="/top-tracks" element={<TopTracks />} />
 							<Route path="/playlists/:id" element={<Playlist />} />
