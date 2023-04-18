@@ -1,9 +1,12 @@
-var windowW = window.innerWidth, windowH = Math.max(600, window.innerHeight);
-var body = document.body;
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+var windowW = window.innerWidth,
+	windowH = Math.max(600, window.innerHeight);
 
 window.onload = function() {
 	var webgl = new Webgl();
-	var audio = new Audio(webgl);
+	new Audio(webgl);
 };
 
 class Audio {
@@ -33,7 +36,6 @@ class Audio {
 		
 		this.fileReader.onload = function() {
 			_this.audioContext.decodeAudioData(_this.fileReader.result, function(buffer) {
-				console.log(_this);
 				if (_this.source) {
 					_this.source.stop();
 				}
@@ -59,7 +61,9 @@ class Audio {
 	}
 	
 	_render() {
-		if (!this.isReady) return;
+		if (!this.isReady) {
+			return;
+		}
 		this.count++;
 		
 		this.spectrums = new Uint8Array(this.analyser.frequencyBinCount);
@@ -72,8 +76,7 @@ class Audio {
 			
 			if (mult % 2 === 0) {
 				num = i - maxNum * mult;
-			}
-			else {
+			} else {
 				num = maxNum - (i - maxNum * mult);
 			}
 			
@@ -129,7 +132,7 @@ class Webgl {
 		this.renderer.domElement.style.width = windowW + "px";
 		this.renderer.domElement.style.height = windowH + "px";
 		
-		var orbit = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+		var orbit = new OrbitControls(this.camera, this.renderer.domElement);
 		this.windowW = windowW;
 		this.windowH = window.innerHeight;
 		
@@ -161,8 +164,8 @@ class Webgl {
 	createSphere() {
 		this.createShader();
 		
-		this.sphereG = new THREE.IcosahedronBufferGeometry(40, 4);
-		this.sphereM = new THREE.ShaderMaterial( {
+		this.sphereG = new THREE.IcosahedronGeometry(40, 4);
+		this.sphereM = new THREE.ShaderMaterial({
 			vertexShader: this.vertex,
 			fragmentShader: this.fragment,
 			uniforms: {
@@ -175,7 +178,7 @@ class Webgl {
 		});
 		
 		this.detectIndex();
-		this.sphereG.addAttribute("aFrequency", new THREE.BufferAttribute(new Float32Array(this.indexArray.length), 1));
+		this.sphereG.setAttribute("aFrequency", new THREE.BufferAttribute(new Float32Array(this.indexArray.length), 1));
 		
 		this.mesh = new THREE.Mesh(this.sphereG, this.sphereM);
 		
@@ -185,8 +188,8 @@ class Webgl {
 	}
 	
 	createSphere2() {
-		this.sphereG_2 = new THREE.IcosahedronBufferGeometry(39.5, 4);
-		this.sphereG_2.addAttribute("aFrequency", new THREE.BufferAttribute(new Float32Array(this.indexArray.length), 1));
+		this.sphereG_2 = new THREE.IcosahedronGeometry(39.5, 4);
+		this.sphereG_2.setAttribute("aFrequency", new THREE.BufferAttribute(new Float32Array(this.indexArray.length), 1));
 		this.sphereM_2 =  new THREE.ShaderMaterial({
 			vertexShader: this.vertex_2,
 			fragmentShader: this.fragment_2,
@@ -224,8 +227,7 @@ class Webgl {
 			if (detect === 0 || detect > 0) {
 				this.indexArray[this.indexCount] = detect;
 				this.indexPosArray[detect].push(this.indexCount);
-			}
-			else {
+			} else {
 				this.vec3Array[this.vecCount] = vec3;
 				this.indexArray[this.indexCount] = this.vecCount;
 				
@@ -267,8 +269,7 @@ class Webgl {
 			"const float _sin15 = sin(PI / 10.0);",
 			"const float _cos15 = cos(PI / 10.0);",
 			
-			"void main()",
-			"{",
+			"void main() {",
 			"	float frequency;",
 			"	float SquareF = aFrequency * aFrequency;",
 			
@@ -308,8 +309,7 @@ class Webgl {
 			
 			"const float frequencyNum = 256.0;",
 			
-			"void main()",
-			"{",
+			"void main() {",
 			"	float f = smoothstep(0.0, 0.00002, vFrequency * vFrequency) * vFrequency;",
 			"	float red = min(1.0, 0.75 + f * 1.9);",
 			"	float green = min(1.0, 0.75 + f * 3.6);",
@@ -326,12 +326,9 @@ class Webgl {
 			"	green += offsetSum - vResolution * max(0.3, vFrequency * 2.0);",
 			
 			"	vec3 color;",
-			"	if(isBlack > 0)",
-			"	{",
+			"	if (isBlack > 0) {",
 			"		color = vec3(red, green, blue);",
-			"	}",
-			"	else",
-			"	{",
+			"	} else {",
 			"		color = vec3((red + green + blue) * (red + green + blue) * (red + green + blue)/ 27.0);",
 			"	}",
 			
@@ -342,12 +339,12 @@ class Webgl {
 		this.vertex_2 = [
 			"varying vec3 vPosition;",
 			
-			"void main()",
-			"{",
+			"void main() {",
 			"	vPosition = position;",
 			"	gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);", 
 			"}"
 		].join("\n");
+		
 		this.fragment_2 = [
 			"uniform float uScale;",
 			"uniform int isBlack;",
@@ -356,20 +353,16 @@ class Webgl {
 			"const float frequencyNum = 256.0;",
 			
 			"const float radius = 40.0;",
-			"const vec3 color = vec3(0 , 0, 0);",
+			"const vec3 color = vec3(0, 0, 0);",
 			
-			"void main()",
-			"{",
+			"void main() {",
 			"	vec3 pos = vec3(vPosition.x, -vPosition.y, vPosition.z);",
 			"	vec3 resolut = pos / (radius * 10.0) + 0.05;",
 			
 			"	vec3 _color;",
-			"	if(isBlack < 0)",
-			"	{",
+			"	if (isBlack < 0) {",
 			"		_color = vec3(0.0);",
-			"	}",
-			"	else",
-			"	{",
+			"	} else {",
 			"		_color = color + resolut;",
 			"	}",
 			
