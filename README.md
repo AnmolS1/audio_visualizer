@@ -22,7 +22,7 @@ visualizes audio
 - [ ] choose music from website
 - [ ] introduce modifications to visuals
 
-### reminders for test-express-w-react
-- npm install inside client
-- npm install outside client
-- create .env file
+### Steps to run
+- `npm i`
+- `npm run start`
+	- app will be available on localhost:3000

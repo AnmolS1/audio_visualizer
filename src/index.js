@@ -43,7 +43,7 @@ class Audio {
 				_this.source = _this.audioContext.createBufferSource();
 				_this.source.buffer = buffer;
 				
-				_this.source.loop = true;
+				_this.source.loop = false;
 				
 				_this.source.connect(_this.analyser);
 				
@@ -70,7 +70,7 @@ class Audio {
 		this.spectrums = new Uint8Array(this.analyser.frequencyBinCount);
 		this.analyser.getByteFrequencyData(this.spectrums);
 		
-		var num, mult, frequency, maxNum = 255, frequencyAvg = 0;
+		var num, mult, maxNum = 255, frequencyAvg = 0;
 		
 		for (var i = 0; i < this.indexPosLength; i++) {
 			mult = Math.floor(i / maxNum);
@@ -133,7 +133,7 @@ class Webgl {
 		this.renderer.domElement.style.width = windowW + "px";
 		this.renderer.domElement.style.height = windowH + "px";
 		
-		var orbit = new OrbitControls(this.camera, this.renderer.domElement);
+		new OrbitControls(this.camera, this.renderer.domElement);
 		this.windowW = windowW;
 		this.windowH = window.innerHeight;
 		
@@ -154,7 +154,6 @@ class Webgl {
 			
 			div.style.width = this.windowW + "px";
 			div.style.height = window.innerHeight + "px";
-			
 		}.bind(this);
 		
 		this.createSphere();
