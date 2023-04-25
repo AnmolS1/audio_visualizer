@@ -69,7 +69,7 @@ app.get('/callback', (req, res) => {
 				expires_in
 			});
 			
-			res.redirect(`http://192.168.0.8:3000/?${params}`);
+			res.redirect(`http://localhost:3000/?${params}`);
 		} else {
 			res.redirect(`/?${querystring.stringify({error: 'invalid_token'})}`);
 		}
